@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve images
-app.use('/images', express.static('../kapato-store/src/assets/caps'));
+// app.use('/images', express.static('../kapato-store/src/assets/caps'));
 
 // Routes
 app.use('/api/products', require('./routes/products'));
