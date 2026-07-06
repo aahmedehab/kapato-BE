@@ -36,8 +36,8 @@ const pool = new Pool({
   },
 });
 
-pool.connect()
-  .then(() => console.log("✅ Connected to PostgreSQL"))
-  .catch(err => console.error("❌ Database connection error:", err));
+// pool.connect()
+//   .then(() => console.log("✅ Connected to PostgreSQL"))
+//   .catch(err => console.error("❌ Database connection error:", err));
 
 module.exports = pool;
