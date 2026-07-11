@@ -2,9 +2,23 @@ const db = require("../config/db");
 
 const Product = {
   getAll: async () => {
-    const result = await db.query("SELECT * FROM products ORDER BY id DESC");
+    const result = await db.query(`
+      SELECT
+        p.*,
+        COUNT(v.id) AS colors_count
+      FROM products p
+      LEFT JOIN product_variants v
+        ON p.id = v.product_id
+      GROUP BY p.id
+      ORDER BY p.id DESC
+    `);
+
     return result.rows;
   },
+
+
+
+
 
   getById: async (id) => {
     const product = await db.query(
