@@ -1,3 +1,6 @@
+require("pg");
+require("pg-hstore");
+
 let app;
 
 try {
