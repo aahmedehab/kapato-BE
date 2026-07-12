@@ -7,9 +7,21 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  "https://kapato.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin || true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   })
 );
