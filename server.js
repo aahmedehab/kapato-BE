@@ -3,6 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const sequelize = require("./config/db");
 
+const orderRoutes = require("./routes/order");
+
 dotenv.config();
 
 const app = express();
@@ -80,5 +82,6 @@ const ensureDb = async (req, res, next) => {
 };
 
 app.use("/api/products", ensureDb, require("./routes/products"));
+app.use("/api/orders", ensureDb, require("./routes/order"));
 
 module.exports = app;
