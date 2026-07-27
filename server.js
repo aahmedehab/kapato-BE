@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const sequelize = require("./config/db");
 
 const orderRoutes = require("./routes/order");
+const colorRoutes = require("./routes/color");
 
 dotenv.config();
 
@@ -83,5 +84,6 @@ const ensureDb = async (req, res, next) => {
 
 app.use("/api/products", ensureDb, require("./routes/products"));
 app.use("/api/orders", ensureDb, require("./routes/order"));
+app.use("/api/colors", ensureDb, require("./routes/color"));
 
 module.exports = app;
