@@ -22,8 +22,8 @@ const ProductVariant = sequelize.define(
 
     sku: DataTypes.STRING,
 
-    image: DataTypes.STRING,
-
+    folder_name: DataTypes.STRING,
+    
     stock: DataTypes.INTEGER,
   },
   {

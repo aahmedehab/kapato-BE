@@ -85,10 +85,32 @@ const getDashboard = async (req, res) => {
 
 const topColors = await OrderItem.findAll({
   attributes: [
-    "color",
+    [col("variant.color.name"), "color"],
+    [col("variant.color.hex_code"), "hex_code"],
     [fn("SUM", col("quantity")), "sold"],
   ],
-  group: ["color"],
+
+  include: [
+    {
+      model: ProductVariant,
+      as: "variant",
+      attributes: [],
+      include: [
+        {
+          model: Color,
+          as: "color",
+          attributes: [],
+        },
+      ],
+    },
+  ],
+
+  group: [
+    "variant->color.id",
+    "variant->color.name",
+    "variant->color.hex_code",
+  ],
+
   order: [[literal("sold"), "DESC"]],
   limit: 5,
 });

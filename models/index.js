@@ -32,6 +32,16 @@ OrderItem.belongsTo(Order, {
   foreignKey: "order_id",
 });
 
+OrderItem.belongsTo(ProductVariant, {
+  foreignKey: "variant_id",
+  as: "variant",
+});
+
+ProductVariant.hasMany(OrderItem, {
+  foreignKey: "variant_id",
+  as: "orderItems",
+});
+
 module.exports = {
   Product,
   ProductVariant,

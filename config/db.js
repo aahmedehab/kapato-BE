@@ -18,6 +18,9 @@ const sequelize = new Sequelize(
   databaseUrl || "postgres://localhost:5432/kapato",
   {
     dialect: "postgres",
+
+    timezone: "+03:00",
+
     dialectOptions: useSsl
       ? {
           ssl: {
@@ -32,7 +35,7 @@ const sequelize = new Sequelize(
       idle: 10000,
       acquire: 30000,
     },
-    logging: false,
+    logging: console.log,
   }
 );
 

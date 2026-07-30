@@ -30,7 +30,11 @@ const Order = sequelize.define(
 
     total: DataTypes.INTEGER,
 
-    created_at: DataTypes.DATE,
+    created_at: {
+  type: DataTypes.DATE,
+  allowNull: false,
+  defaultValue: DataTypes.NOW,
+},
 
     status: {
       type: DataTypes.STRING,

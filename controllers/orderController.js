@@ -1,5 +1,7 @@
 const { Order, OrderItem } = require("../models");
 
+const { DateTime } = require("luxon");
+
 const placeOrder = async (req, res) => {
   try {
     const {
@@ -16,6 +18,10 @@ const placeOrder = async (req, res) => {
         message: "Cart is empty",
       });
     }
+
+    const cairoNow = DateTime.now()
+  .setZone("Africa/Cairo")
+  .toJSDate();
 
     const order = await Order.create({
       customer_name: customer.customer_name,

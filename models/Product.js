@@ -18,8 +18,8 @@ const Product = sequelize.define(
 
     price: DataTypes.DECIMAL,
 
-    img: DataTypes.STRING,
-
+    folder_path: DataTypes.STRING,
+    
     is_active: DataTypes.BOOLEAN,
   },
   {

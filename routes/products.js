@@ -7,6 +7,7 @@ const {
   updateProduct,
   addVariant,
   deleteVariant,
+  updateVariant,
 } = require("../controllers/productController");
 
 const router = express.Router();
@@ -19,6 +20,6 @@ router.put("/:id", updateProduct);
 
 router.post("/variants", addVariant);
 router.delete("/variants/:id", deleteVariant);
-
+router.put("/variants/:id", updateVariant);
 
 module.exports = router;
