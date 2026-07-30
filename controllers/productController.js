@@ -4,40 +4,9 @@ const {
   Color,
 } = require("../models");
 
-const fs = require("fs");
-const path = require("path");
 
-const getVariantImages = (productFolder, variantFolder) => {
-  try {
-const folderPath = path.join(
-  __dirname,
-  "../../kapato-store/public/images",
-  productFolder,
-  variantFolder
-);
-console.log(folderPath);
-console.log(fs.existsSync(folderPath));
-    const files = fs
-      .readdirSync(folderPath)
-      .filter((file) =>
-        /\.(png|jpg|jpeg|webp)$/i.test(file)
-      )
-      .sort((a, b) => {
-        const numA = parseInt(a);
-        const numB = parseInt(b);
 
-        return numA - numB;
-      });
 
-    return files.map((file, index) => ({
-      id: index + 1,
-      image: `${productFolder}/${variantFolder}/${file}`,
-      sort_order: index + 1,
-    }));
-  } catch {
-    return [];
-  }
-};
 
 
 // Get all products
@@ -62,18 +31,12 @@ include: [
 const result = products.map((product) => {
   const data = product.toJSON();
 
-data.variants.forEach((variant) => {
-  variant.images = getVariantImages(
-    data.folder_path,
-    variant.folder_name
-  );
-});
 
-  return {
-    ...data,
-    img: data.variants?.[0]?.images?.[0]?.image || null,
-    colors_count: data.variants.length,
-  };
+return {
+  ...data,
+  img: null,
+  colors_count: data.variants.length,
+};
 });
 
     res.json(result);
@@ -106,13 +69,6 @@ const product = await Product.findByPk(req.params.id, {
     }
 
 const data = product.toJSON();
-
-data.variants.forEach((variant) => {
-  variant.images = getVariantImages(
-    data.folder_path,
-    variant.folder_name
-  );
-});
 
 res.json(data);
   } catch (err) {
@@ -172,6 +128,38 @@ const updateProduct = async (req, res) => {
   }
 };
 
+// add product
+const addProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      price,
+      description,
+      folder_path,
+      is_active,
+    } = req.body;
+
+    const product = await Product.create({
+      name,
+      slug,
+      price,
+      description,
+      folder_path,
+      is_active,
+    });
+
+    res.status(201).json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Error creating product",
+    });
+  }
+};
+
+
+// add variant
 const addVariant = async (req, res) => {
   try {
     const { product_id, color_id, sku, folder_name, stock } = req.body;
@@ -243,4 +231,5 @@ module.exports = {
   addVariant,
   deleteVariant,
   updateVariant,
+  addProduct,
 };

@@ -5,12 +5,15 @@ const {
   deleteProduct,
   getColors,
   updateProduct,
+  addProduct,
   addVariant,
   deleteVariant,
   updateVariant,
 } = require("../controllers/productController");
 
 const router = express.Router();
+
+router.post("/", addProduct);
 
 router.get("/", getProducts);
 router.get("/:id", getProductById);
