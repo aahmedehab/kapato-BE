@@ -1,5 +1,7 @@
 const express = require("express");
 
+const adminAuth = require("../middleware/adminAuth");
+
 const {
   placeOrder,
   getOrders,
@@ -10,9 +12,7 @@ const router = express.Router();
 
 router.post("/", placeOrder);
 
-router.get("/", getOrders);
-
-router.put("/:id/status", updateOrderStatus);
-
+router.get("/", adminAuth, getOrders);
+router.put("/:id/status", adminAuth, updateOrderStatus);
 
 module.exports = router;

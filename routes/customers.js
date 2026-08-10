@@ -7,8 +7,10 @@ const {
   getCustomerDetails,
 } = require("../controllers/customerController");
 
-router.get("/", getCustomers);
+const adminAuth = require("../middleware/adminAuth");
 
-router.get("/:email", getCustomerDetails);
+router.get("/", adminAuth, getCustomers);
+
+router.get("/:email", adminAuth, getCustomerDetails);
 
 module.exports = router;

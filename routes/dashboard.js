@@ -6,6 +6,8 @@ const {
   getDashboard,
 } = require("../controllers/dashboardController");
 
-router.get("/", getDashboard);
+const adminAuth = require("../middleware/adminAuth");
+
+router.get("/", adminAuth, getDashboard);
 
 module.exports = router;

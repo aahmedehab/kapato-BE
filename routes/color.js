@@ -9,10 +9,13 @@ const {
   deleteColor,
 } = require("../controllers/colorController");
 
-router.get("/", getColors);
-router.get("/:id", getColorById);
-router.post("/", createColor);
-router.put("/:id", updateColor);
-router.delete("/:id", deleteColor);
+const adminAuth = require("../middleware/adminAuth");
+
+router.get("/", adminAuth, getColors);
+router.get("/:id", adminAuth, getColorById);
+
+router.post("/", adminAuth, createColor);
+router.put("/:id", adminAuth, updateColor);
+router.delete("/:id", adminAuth, deleteColor);
 
 module.exports = router;

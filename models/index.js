@@ -5,6 +5,8 @@ const Color = require("./Color");
 const Order = require("./Order");
 const OrderItem = require("./OrderItem");
 
+const Admin = require("./Admin");
+
 Product.hasMany(ProductVariant, {
   foreignKey: "product_id",
   as: "variants",
@@ -48,4 +50,5 @@ module.exports = {
   Color,
   Order,
   OrderItem,
+  Admin,
 };
