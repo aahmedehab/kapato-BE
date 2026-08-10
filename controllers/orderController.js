@@ -1,6 +1,8 @@
 const { Order, OrderItem } = require("../models");
-
 const { DateTime } = require("luxon");
+const transporter = require("../config/mailer");
+const orderAdminEmailTemplate = require("../templates/orderAdminEmail");
+const orderCustomerEmailTemplate = require("../templates/orderCustomerEmail");
 
 const placeOrder = async (req, res) => {
   try {
@@ -28,8 +30,10 @@ const placeOrder = async (req, res) => {
       email: customer.email,
       phone: customer.phone,
       address: customer.address,
+      apartment: customer.apartment || null,
       city: customer.city,
       governorate: customer.governorate,
+      postal_code: customer.postalCode || null,
       subtotal,
       shipping,
       total,
@@ -47,6 +51,85 @@ const placeOrder = async (req, res) => {
         price: item.price,
       }))
     );
+
+const orderDetails = cart
+  .map(
+    (item) => `
+      <div style="padding:12px 0; border-bottom:1px solid #eeeeee;">
+
+        <p style="margin:0 0 5px; font-size:14px; font-weight:bold; color:#111111;">
+          ${item.name}
+        </p>
+
+        <p style="margin:0; font-size:13px; color:#666666;">
+          ${item.color} • SKU: ${item.sku} • Qty: ${item.quantity}
+        </p>
+
+        <p style="margin:5px 0 0; font-size:13px; color:#111111;">
+          ${item.price * item.quantity} LE
+        </p>
+
+      </div>
+    `
+  )
+  .join("");
+
+  await transporter.sendMail({
+  from: {
+    name: "KAPATO",
+    address: process.env.MAIL_FROM,
+  },
+  to: process.env.MAIL_TO,
+  replyTo: customer.email,
+  subject: `New Order #${order.order_number}`,
+  html: orderAdminEmailTemplate({
+    orderId: order.order_number,
+    customerName: customer.customer_name,
+    email: customer.email,
+    phone: customer.phone,
+address: [
+  customer.address,
+  customer.apartment,
+  customer.city,
+  customer.governorate,
+  customer.postalCode,
+]
+  .filter(Boolean)
+  .join(", "),
+    items: orderDetails,
+    subtotal,
+    shipping,
+    total,
+  }),
+});
+
+await transporter.sendMail({
+  from: {
+    name: "KAPATO",
+    address: process.env.MAIL_FROM,
+  },
+  to: customer.email,
+  subject: `Order Confirmation #${order.order_number}`,
+  html: orderCustomerEmailTemplate({
+    orderId: order.order_number,
+    customerName: customer.customer_name,
+    email: customer.email,
+    phone: customer.phone,
+    address: [
+      customer.address,
+      customer.apartment,
+      customer.city,
+      customer.governorate,
+      customer.postalCode,
+    ]
+      .filter(Boolean)
+      .join(", "),
+    items: orderDetails,
+    subtotal,
+    shipping,
+    total,
+  }),
+});
 
     res.status(201).json({
       success: true,

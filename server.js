@@ -7,6 +7,7 @@ const orderRoutes = require("./routes/order");
 const colorRoutes = require("./routes/color");
 const customerRoutes = require("./routes/customers");
 
+const contactRoutes = require("./routes/contactRoutes");
 dotenv.config();
 
 const app = express();
@@ -88,5 +89,5 @@ app.use("/api/orders", ensureDb, require("./routes/order"));
 app.use("/api/colors", ensureDb, require("./routes/color"));
 app.use("/api/customers", ensureDb, require("./routes/customers"));
 app.use("/api/dashboard", ensureDb, require("./routes/dashboard"));
-
+app.use("/api/contact", contactRoutes);
 module.exports = app;

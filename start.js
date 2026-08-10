@@ -1,6 +1,8 @@
 const app = require("./server");
 const sequelize = require("./config/db");
 
+const transporter = require("./config/mailer");
+
 const PORT = process.env.PORT || 5000;
 
 (async () => {

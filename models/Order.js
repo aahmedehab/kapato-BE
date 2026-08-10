@@ -20,9 +20,19 @@ const Order = sequelize.define(
 
     address: DataTypes.TEXT,
 
+    apartment: {
+  type: DataTypes.STRING,
+  allowNull: true,
+},
+
     city: DataTypes.STRING,
 
     governorate: DataTypes.STRING,
+
+    postal_code: {
+  type: DataTypes.STRING,
+  allowNull: true,
+},
 
     subtotal: DataTypes.INTEGER,
 
