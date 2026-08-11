@@ -104,7 +104,7 @@ const deleteProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, description, folder_path, is_active, slug } = req.body;
+    const { name, price, old_price, description, folder_path, is_active, slug } = req.body;
 
     const product = await Product.findByPk(id);
 
@@ -114,6 +114,7 @@ const updateProduct = async (req, res) => {
 
     product.name = name ?? product.name;
     product.price = price ?? product.price;
+    product.old_price = old_price ?? product.old_price;
     product.description = description ?? product.description;
     product.is_active = is_active ?? product.is_active;
     product.slug = slug ?? product.slug;
@@ -135,6 +136,7 @@ const addProduct = async (req, res) => {
       name,
       slug,
       price,
+      old_price,
       description,
       folder_path,
       is_active,
@@ -144,6 +146,7 @@ const addProduct = async (req, res) => {
       name,
       slug,
       price,
+      old_price,
       description,
       folder_path,
       is_active,

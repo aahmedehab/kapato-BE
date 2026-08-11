@@ -18,6 +18,8 @@ const Product = sequelize.define(
 
     price: DataTypes.DECIMAL,
 
+    old_price: DataTypes.DECIMAL,
+    
     folder_path: DataTypes.STRING,
     
     is_active: DataTypes.BOOLEAN,
