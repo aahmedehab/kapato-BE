@@ -15,10 +15,6 @@ dotenv.config();
 
 const app = express();
 
-app.get("/loaderio-e9cf38f083537b80dd9ff06cbbc99cc3.txt", (req, res) => {
-  res.type("text").send("loaderio-e9cf38f083537b80dd9ff06cbbc99cc3");
-});
-
 const allowedOrigins = [
   "https://kapato.vercel.app",
   "http://localhost:5173",
