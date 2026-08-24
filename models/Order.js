@@ -39,6 +39,22 @@ const Order = sequelize.define(
     shipping: DataTypes.INTEGER,
 
     total: DataTypes.INTEGER,
+    
+    promo_code_id: {
+  type: DataTypes.INTEGER,
+  allowNull: true,
+},
+    promo_code: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+
+
+    promo_discount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
 
     created_at: {
   type: DataTypes.DATE,

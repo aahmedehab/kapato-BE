@@ -11,6 +11,8 @@ const contactRoutes = require("./routes/contactRoutes");
 
 const adminRoutes = require("./routes/adminRoutes");
 
+const promoCodeRoutes = require("./routes/promoCodeRoutes");
+
 dotenv.config();
 
 const app = express();
@@ -94,4 +96,5 @@ app.use("/api/customers", ensureDb, require("./routes/customers"));
 app.use("/api/dashboard", ensureDb, require("./routes/dashboard"));
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/promocodes", ensureDb, promoCodeRoutes);
 module.exports = app;
