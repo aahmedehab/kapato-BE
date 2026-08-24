@@ -10,58 +10,82 @@ const orderCustomerEmailTemplate = ({
   promoDiscount,
   shipping,
   total,
-}) => {
-  return `
+}) => `
+
 <!DOCTYPE html>
+
 <html>
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Order Confirmation</title>
 </head>
 
-<body style="margin:0; padding:0; background:#f5f5f5; font-family:Arial,sans-serif;">
+<body style="margin:0; padding:0; background:#f4f4f4; font-family:Arial, Helvetica, sans-serif;">
 
   <div style="max-width:600px; margin:30px auto; background:#ffffff; border-radius:16px; overflow:hidden;">
 
-    <div style="padding:25px; border-bottom:1px solid #eeeeee;">
-      <h1 style="margin:0; font-size:24px; color:#111111;">
-        KAPATO
-      </h1>
 
-      <p style="margin:8px 0 0; color:#666666;">
-        Order Confirmation #${orderId}
-      </p>
-    </div>
+<!-- Header -->
+<div style="background:#1230c6; padding:28px 30px; text-align:center;">
+  <h1 style="margin:0; color:#f8dfc5; font-size:26px; letter-spacing:2px;">
+    KAPATO
+  </h1>
 
-    <div style="padding:25px;">
+  <p style="margin:8px 0 0; color:#cccccc; font-size:13px;">
+    Order Confirmation
+  </p>
+</div>
 
-      <p style="font-size:16px; color:#111111;">
-        Hi ${customerName},
-      </p>
+<!-- Content -->
+<div style="padding:30px;">
 
-      <p style="color:#555555;">
-        Thank you for your order. We've received it successfully.
-      </p>
+  <h2 style="margin:0 0 25px; color:#111111; font-size:20px;">
+    Thank you for your order #${orderId}
+  </h2>
 
-      <h3 style="margin-top:25px; color:#111111;">
-        Order Items
-      </h3>
+  <!-- Customer Info -->
+  <div style="background:#f8f8f8; border-radius:12px; padding:20px; margin-bottom:25px;">
 
-      ${items}
+    <p style="margin:0 0 12px; font-size:14px; color:#555555;">
+      <strong style="color:#111111;">Customer:</strong>
+      ${customerName}
+    </p>
 
-      <div style="border-top:1px solid #eeeeee; margin-top:20px; padding-top:20px;">
+    <p style="margin:0 0 12px; font-size:14px; color:#555555;">
+      <strong style="color:#111111;">Email:</strong>
+      ${email}
+    </p>
 
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-          <span style="color:#555555;">
-            Subtotal
-          </span>
+    <p style="margin:0 0 12px; font-size:14px; color:#555555;">
+      <strong style="color:#111111;">Phone:</strong>
+      ${phone}
+    </p>
 
-          <span style="color:#111111;">
-            LE ${subtotal}
-          </span>
-        </div>
+    <p style="margin:0; font-size:14px; color:#555555;">
+      <strong style="color:#111111;">Address:</strong>
+      ${address}
+    </p>
 
-        ${
+  </div>
+
+  <!-- Order Items -->
+  <p style="margin:0 0 10px; font-size:14px; font-weight:bold; color:#111111;">
+    Order Items
+  </p>
+
+  <div style="background:#fafafa; border-radius:10px; padding:18px; margin-bottom:25px;">
+    ${items}
+  </div>
+
+  <!-- Totals -->
+
+  <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px; color:#555555;">
+    <span>Subtotal: </span>
+    <span>${subtotal} LE</span>
+  </div>
+
+  ${
           promoCode && promoDiscount > 0
             ? `
               <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -77,35 +101,36 @@ const orderCustomerEmailTemplate = ({
             : ""
         }
 
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-          <span style="color:#555555;">
-            Shipping
-          </span>
+  <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#555555;">
+    <span>Shipping: </span>
+    <span>${shipping} LE</span>
+  </div>
 
-          <span style="color:#111111;">
-            LE ${shipping}
-          </span>
-        </div>
+  <div style="display:flex; justify-content:space-between; padding-top:15px; border-top:1px solid #eeeeee; font-size:16px; font-weight:bold; color:#111111;">
+    <span>Total: </span>
+    <span>${total} LE</span>
+  </div>
 
-        <div style="display:flex; justify-content:space-between; padding-top:15px; border-top:1px solid #eeeeee;">
-          <strong style="font-size:18px; color:#111111;">
-            Total
-          </strong>
+</div>
 
-          <strong style="font-size:18px; color:#111111;">
-            LE ${total}
-          </strong>
-        </div>
+<!-- Footer -->
+<div style="border-top:1px solid #eeeeee; padding:20px 30px; text-align:center;">
 
-      </div>
+  <p style="margin:0; color:#999999; font-size:12px;">
+    Thank you for shopping with KAPATO.
+  </p>
 
-    </div>
+  <p style="margin:8px 0 0; color:#999999; font-size:12px;">
+    © 2026 KAPATO. All rights reserved.
+  </p>
+
+</div>
+
 
   </div>
 
 </body>
 </html>
 `;
-};
 
 module.exports = orderCustomerEmailTemplate;
