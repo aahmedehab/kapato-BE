@@ -10,6 +10,7 @@ const orderCustomerEmailTemplate = ({
   promoDiscount,
   shipping,
   total,
+  paymentMethod,
 }) => `
 
 <!DOCTYPE html>
@@ -69,6 +70,17 @@ const orderCustomerEmailTemplate = ({
 
   </div>
 
+   <div style="background:#fafafa; border-radius:10px; padding:18px; margin-bottom:25px;">
+  <p style="margin: 12px 0 8px; font-size:14px; color:#555555;">
+  <strong style="color:#111111;">Payment Method:</strong>
+  ${
+    paymentMethod === "instapay"
+      ? "Instapay"
+      : "Cash on Delivery"
+  }
+</p>
+</div>
+
   <!-- Order Items -->
   <p style="margin:0 0 10px; font-size:14px; font-weight:bold; color:#111111;">
     Order Items
@@ -110,6 +122,7 @@ const orderCustomerEmailTemplate = ({
     <span>Total: </span>
     <span>${total} LE</span>
   </div>
+
 
 </div>
 

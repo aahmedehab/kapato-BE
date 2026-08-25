@@ -19,6 +19,7 @@ const placeOrder = async (req, res) => {
       customer,
       cart,
       promoCode,
+      paymentMethod,
     } = req.body;
 
     // =========================
@@ -42,6 +43,15 @@ const placeOrder = async (req, res) => {
         message: "Cart is empty",
       });
     }
+
+    if (!["cod", "instapay"].includes(paymentMethod)) {
+  await transaction.rollback();
+
+  return res.status(400).json({
+    success: false,
+    message: "Invalid payment method",
+  });
+}
 
     // =========================
     // Calculate subtotal SERVER-SIDE
@@ -207,6 +217,8 @@ const shipping = Number(shippingRate.price);
         shipping,
         total,
 
+        payment_method: paymentMethod,
+
         promo_code_id: promo ? promo.id : null,
         promo_code: promo ? promo.code : null,
         promo_discount: discount,
@@ -314,6 +326,8 @@ const shipping = Number(shippingRate.price);
         shipping,
 
         total,
+
+        paymentMethod: paymentMethod,
       }),
     });
 
@@ -361,6 +375,8 @@ const shipping = Number(shippingRate.price);
         shipping,
 
         total,
+
+        paymentMethod,
       }),
     });
 
@@ -384,6 +400,8 @@ const shipping = Number(shippingRate.price);
       shipping,
 
       total,
+
+      paymentMethod: paymentMethod,
     });
 
   } catch (err) {
