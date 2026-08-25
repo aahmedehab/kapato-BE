@@ -7,6 +7,8 @@ const OrderItem = require("./OrderItem");
 
 const PromoCode = require("./PromoCode");
 
+const ShippingRate = require("./ShippingRate");
+
 const Admin = require("./Admin");
 
 // Product ↔ Variants
@@ -68,4 +70,5 @@ module.exports = {
   OrderItem,
   PromoCode,
   Admin,
+  ShippingRate,
 };

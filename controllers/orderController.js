@@ -1,4 +1,9 @@
-const { Order, OrderItem, PromoCode } = require("../models");
+const {
+  Order,
+  OrderItem,
+  PromoCode,
+  ShippingRate,
+} = require("../models");
 const sequelize = require("../config/db");
 const { DateTime } = require("luxon");
 
@@ -64,7 +69,23 @@ const placeOrder = async (req, res) => {
     // Shipping
     // =========================
 
-    const shipping = 60;
+const shippingRate = await ShippingRate.findOne({
+  where: {
+    governorate: customer.governorate,
+  },
+  transaction,
+});
+
+if (!shippingRate) {
+  await transaction.rollback();
+
+  return res.status(400).json({
+    success: false,
+    message: "Shipping is not available for this governorate",
+  });
+}
+
+const shipping = Number(shippingRate.price);
 
     // =========================
     // Promo Code
