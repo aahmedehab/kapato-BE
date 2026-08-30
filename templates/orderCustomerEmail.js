@@ -9,6 +9,7 @@ const orderCustomerEmailTemplate = ({
   promoCode,
   promoDiscount,
   shipping,
+  freeShipping,
   total,
   paymentMethod,
 }) => `
@@ -113,10 +114,15 @@ const orderCustomerEmailTemplate = ({
             : ""
         }
 
-  <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#555555;">
-    <span>Shipping: </span>
-    <span>${shipping} LE</span>
-  </div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#555555;">
+  <span>Shipping: </span>
+
+  ${
+    freeShipping
+      ? `<span style="color:#16803c; font-weight:bold;">Free</span>`
+      : `<span>${shipping} LE</span>`
+  }
+</div>
 
   <div style="display:flex; justify-content:space-between; padding-top:15px; border-top:1px solid #eeeeee; font-size:16px; font-weight:bold; color:#111111;">
     <span>Total: </span>

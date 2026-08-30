@@ -28,12 +28,19 @@ const PromoCode = sequelize.define(
     },
 
     discount_value: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      validate: {
-        min: 0.01,
-      },
-    },
+  type: DataTypes.DECIMAL(10, 2),
+  allowNull: true,
+  defaultValue: 0,
+  validate: {
+    min: 0,
+  },
+},
+
+free_shipping: {
+  type: DataTypes.BOOLEAN,
+  allowNull: false,
+  defaultValue: false,
+},
 
     credits: {
       type: DataTypes.INTEGER,
@@ -49,6 +56,11 @@ const PromoCode = sequelize.define(
       allowNull: false,
       defaultValue: true,
     },
+
+    free_shipping: {
+  type: DataTypes.BOOLEAN,
+  defaultValue: false,
+},
 
     created_at: {
       type: DataTypes.DATE,

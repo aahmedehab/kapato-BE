@@ -3,6 +3,8 @@ const {
   OrderItem,
   PromoCode,
   ShippingRate,
+  Product,
+  ProductVariant,
 } = require("../models");
 const sequelize = require("../config/db");
 const { DateTime } = require("luxon");
@@ -57,27 +59,77 @@ const placeOrder = async (req, res) => {
     // Calculate subtotal SERVER-SIDE
     // =========================
 
-    const subtotal = cart.reduce((sum, item) => {
-      const price = Number(item.price);
-      const quantity = Number(item.quantity);
+let subtotal = 0;
+const validatedCart = [];
 
-      if (
-        !Number.isFinite(price) ||
-        !Number.isFinite(quantity) ||
-        quantity <= 0
-      ) {
-        throw new Error("Invalid cart item");
-      }
+for (const item of cart) {
+  const quantity = Number(item.quantity);
 
-      return sum + price * quantity;
-    }, 0);
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    throw new Error("Invalid cart quantity");
+  }
 
-    // Your current system uses INTEGER EGP
-    const calculatedSubtotal = Math.round(subtotal);
+  // Get the real product from DB
+  const product = await Product.findByPk(item.id, {
+    transaction,
+  });
+
+  if (!product || !product.is_active) {
+    throw new Error(`Product not found: ${item.id}`);
+  }
+
+  // Get the selected variant from DB
+  let variant = null;
+
+  if (item.variantId) {
+    variant = await ProductVariant.findOne({
+      where: {
+        id: item.variantId,
+        product_id: product.id,
+      },
+      transaction,
+    });
+
+    if (!variant) {
+      throw new Error(`Invalid product variant: ${item.variantId}`);
+    }
+
+    if (Number(variant.stock) < quantity) {
+  throw new Error(
+    `Insufficient stock for product variant: ${item.variantId}`
+  );
+}
+
+variant.stock -= quantity;
+
+await variant.save({ transaction });
+
+  }
+
+  // Use price ONLY from DB
+  const price = Number(product.price);
+
+  if (!Number.isFinite(price) || price < 0) {
+    throw new Error(`Invalid product price: ${product.id}`);
+  }
+
+  subtotal += price * quantity;
+
+  validatedCart.push({
+  ...item,
+  price,
+  quantity,
+  sku: variant?.sku || item.sku,
+});
+}
+
+// Your current system uses INTEGER EGP
+const calculatedSubtotal = Math.round(subtotal);
 
     // =========================
     // Shipping
     // =========================
+
 
 const shippingRate = await ShippingRate.findOne({
   where: {
@@ -95,7 +147,10 @@ if (!shippingRate) {
   });
 }
 
-const shipping = Number(shippingRate.price);
+// Normal shipping price
+let shipping = Number(shippingRate.price);
+
+
 
     // =========================
     // Promo Code
@@ -154,13 +209,22 @@ const shipping = Number(shippingRate.price);
       // Calculate discount
       // =========================
 
-      if (promo.discount_type === "percentage") {
-        discount =
-          calculatedSubtotal *
-          (Number(promo.discount_value) / 100);
-      } else if (promo.discount_type === "fixed") {
-        discount = Number(promo.discount_value);
-      }
+      
+if (
+  promo.discount_value !== null &&
+  promo.discount_value !== undefined &&
+  Number(promo.discount_value) > 0
+) {
+  if (promo.discount_type === "percentage") {
+    discount =
+      calculatedSubtotal *
+      (Number(promo.discount_value) / 100);
+  } else if (promo.discount_type === "fixed") {
+    discount = Number(promo.discount_value);
+  }
+}
+
+
 
       // Discount cannot exceed subtotal
       discount = Math.min(
@@ -181,14 +245,18 @@ const shipping = Number(shippingRate.price);
     }
 
     // =========================
-    // Final total
-    // =========================
+// Final total
+// =========================
 
-    const finalSubtotal =
-      calculatedSubtotal - discount;
+if (promo && promo.free_shipping) {
+  shipping = 0;
+}
 
-    const total =
-      finalSubtotal + shipping;
+const finalSubtotal =
+  calculatedSubtotal - discount;
+
+const total =
+  finalSubtotal + shipping;
 
     // =========================
     // Cairo time
@@ -235,7 +303,7 @@ const shipping = Number(shippingRate.price);
     // =========================
 
     await OrderItem.bulkCreate(
-      cart.map((item) => ({
+      validatedCart.map((item) => ({
         order_id: order.id,
         product_id: item.id,
         variant_id: item.variantId || null,
@@ -260,7 +328,7 @@ const shipping = Number(shippingRate.price);
     // Email details
     // =========================
 
-    const orderDetails = cart
+    const orderDetails = validatedCart
       .map(
         (item) => `
           <div style="margin-bottom:15px;">
@@ -280,134 +348,132 @@ const shipping = Number(shippingRate.price);
       )
       .join("");
 
-    // =========================
-    // Admin Email
-    // =========================
+// =========================
+// Send Emails
+// =========================
 
-    await transporter.sendMail({
-      from: {
-        name: "KAPATO",
-        address: process.env.MAIL_FROM,
-      },
+try {
+  // =========================
+  // Admin Email
+  // =========================
 
-      to: process.env.MAIL_TO,
+  await transporter.sendMail({
+    from: {
+      name: "KAPATO",
+      address: process.env.MAIL_FROM,
+    },
 
-      replyTo: customer.email,
+    to: process.env.MAIL_TO,
 
-      subject: `New Order #${order.order_number}`,
+    replyTo: customer.email,
 
-      html: orderAdminEmailTemplate({
-        orderId: order.order_number,
+    subject: `New Order #${order.order_number}`,
 
-        customerName: customer.customer_name,
+    html: orderAdminEmailTemplate({
+      orderId: order.order_number,
+      customerName: customer.customer_name,
+      email: customer.email,
+      phone: customer.phone,
 
-        email: customer.email,
+      address: [
+        customer.address,
+        customer.apartment,
+        customer.city,
+        customer.governorate,
+        customer.postalCode,
+      ]
+        .filter(Boolean)
+        .join(", "),
 
-        phone: customer.phone,
+      items: orderDetails,
+      subtotal: calculatedSubtotal,
+      promoCode: promo?.code || null,
+      promoDiscount: discount,
+      shipping,
+      freeShipping: Boolean(promo?.free_shipping),
+      total,
+      paymentMethod: paymentMethod,
+    }),
+  });
 
-        address: [
-          customer.address,
-          customer.apartment,
-          customer.city,
-          customer.governorate,
-          customer.postalCode,
-        ]
-          .filter(Boolean)
-          .join(", "),
+  console.log("Admin order email sent successfully");
 
-        items: orderDetails,
+} catch (emailError) {
+  console.error("Admin email failed:", emailError);
+}
 
-        subtotal: calculatedSubtotal,
+try {
+  // =========================
+  // Customer Email
+  // =========================
 
-        promoCode: promo?.code || null,
+  await transporter.sendMail({
+    from: {
+      name: "KAPATO",
+      address: process.env.MAIL_FROM,
+    },
 
-        promoDiscount: discount,
+    to: customer.email,
 
-        shipping,
+    subject: `Order Confirmation #${order.order_number}`,
 
-        total,
+    html: orderCustomerEmailTemplate({
+      orderId: order.order_number,
+      customerName: customer.customer_name,
+      email: customer.email,
+      phone: customer.phone,
 
-        paymentMethod: paymentMethod,
-      }),
-    });
+      address: [
+        customer.address,
+        customer.apartment,
+        customer.city,
+        customer.governorate,
+        customer.postalCode,
+      ]
+        .filter(Boolean)
+        .join(", "),
 
-    // =========================
-    // Customer Email
-    // =========================
+      items: orderDetails,
+      subtotal: calculatedSubtotal,
+      promoCode: promo?.code || null,
+      promoDiscount: discount,
+      shipping,
+      freeShipping: Boolean(promo?.free_shipping),
+      total,
+      paymentMethod: paymentMethod,
+    }),
+  });
 
-    await transporter.sendMail({
-      from: {
-        name: "KAPATO",
-        address: process.env.MAIL_FROM,
-      },
+  console.log("Customer order email sent successfully");
 
-      to: customer.email,
-
-      subject: `Order Confirmation #${order.order_number}`,
-
-      html: orderCustomerEmailTemplate({
-        orderId: order.order_number,
-
-        customerName: customer.customer_name,
-
-        email: customer.email,
-
-        phone: customer.phone,
-
-        address: [
-          customer.address,
-          customer.apartment,
-          customer.city,
-          customer.governorate,
-          customer.postalCode,
-        ]
-          .filter(Boolean)
-          .join(", "),
-
-        items: orderDetails,
-
-        subtotal: calculatedSubtotal,
-
-        promoCode: promo?.code || null,
-
-        promoDiscount: discount,
-
-        shipping,
-
-        total,
-
-        paymentMethod,
-      }),
-    });
+} catch (emailError) {
+  console.error("Customer email failed:", emailError);
+}
 
     // =========================
     // Response
     // =========================
 
-    res.status(201).json({
-      success: true,
+res.status(201).json({
+  success: true,
+  orderId: order.order_number,
+  orderDbId: order.id,
+  subtotal: calculatedSubtotal,
+  promoCode: promo?.code || null,
+  promoDiscount: discount,
+  freeShipping: Boolean(promo?.free_shipping),
+  shipping,
+  total,
+  paymentMethod: paymentMethod,
+});
 
-      orderId: order.order_number,
 
-      orderDbId: order.id,
-
-      subtotal: calculatedSubtotal,
-
-      promoCode: promo?.code || null,
-
-      promoDiscount: discount,
-
-      shipping,
-
-      total,
-
-      paymentMethod: paymentMethod,
-    });
-
-  } catch (err) {
-    console.error("Place order error:", err);
 
     // Rollback only if transaction wasn't already committed
+    } catch (err) {
+  console.error("Place order error:", err);
+
+  if (!transaction.finished) {
     try {
       await transaction.rollback();
     } catch (rollbackError) {
@@ -416,12 +482,13 @@ const shipping = Number(shippingRate.price);
         rollbackError
       );
     }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to create order",
-    });
   }
+
+  return res.status(500).json({
+    success: false,
+    message: "Failed to create order",
+  });
+}
 };
 
 const getOrders = async (req, res) => {
